@@ -1,0 +1,43 @@
+- name: Install, configure, and start Nginx
+  hosts: host01
+  become: true
+  vars:
+    nginx_package: nginx
+    nginx_user: www-data
+    nginx_port: 80
+    file_owner: root
+    source_file_path: nginx.conf.j2
+    destination_path: /etc/nginx/nginx.conf
+    file_mode: '0644'
+    apt_state: present
+    service_state: started
+    service_enabled: true
+    uri_url: "http://{{ ansible_default_ipv4.address }}:{{ nginx_port }}"
+    uri_status_code: 200
+    uri_delegation: localhost
+
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: "{{ nginx_package }}"
+        state: "{{ apt_state }}"
+
+    - name: Configure Nginx
+      template:
+        src: "{{ source_file_path }}"
+        dest: "{{ destination_path }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_owner }}"
+        mode: "{{ file_mode }}"
+
+    - name: Start and enable Nginx
+      service:
+        name: "{{ nginx_package }}"
+        state: "{{ service_state }}"
+        enabled: "{{ service_enabled }}"
+
+    - name: Check if Nginx is working
+      uri:
+        url: "{{ uri_url }}"
+        status_code: "{{ uri_status_code }}"
+      delegate_to: "{{ uri_delegation }}"
