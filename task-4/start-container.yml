@@ -1,0 +1,12 @@
+- name: Copy docker image and start docker compose
+  hosts: host01
+
+  tasks:
+    - name: Copy docker image and compose files
+      synchronize:
+        src: ./files/for-remote-host/
+        dest: /home/fogucoco/nginx-https/
+        recursive: yes
+
+    - name: Start docker compose
+      shell: "cd /home/fogucoco/nginx-https/; docker load -i ./nginx-https.tar && docker compose up -d --build"
